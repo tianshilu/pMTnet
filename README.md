@@ -1,12 +1,12 @@
 # pMTnet
 Deep Learning the T Cell Receptor Binding Specificity of Neoantigen
 ## Dependencies
-python(version>3.0.0)
-tensorflow (version=1.11.0)
-numpy (version=1.16.3)
-keras (version=2.2.4)
-pandas (version=0.23.4)
-scikit-learn (version=0.20.3)
+python(version>3.0.0) ; 
+tensorflow (version=1.11.0) ; 
+numpy (version=1.16.3) ; 
+keras (version=2.2.4) ; 
+pandas (version=0.23.4) ; 
+scikit-learn (version=0.20.3) ; 
 scipy (version=1.2.1)
 ## Guided Tutorial
 1. Encoding For TCR, peptide, and HLA.
