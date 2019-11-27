@@ -1,5 +1,6 @@
 # pMTnet
-Deep Learning the T Cell Receptor Binding Specificity of Neoantigen
+Deep learning neural network prediction tcr binding specificity to peptide and HLA. 
+
 ## Dependencies
 python(version>3.0.0) ; 
 tensorflow (version=1.11.0) ; 
