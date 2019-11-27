@@ -8,12 +8,15 @@ keras (version=2.2.4)
 pandas (version=0.23.4)
 scikit-learn (version=0.20.3)
 scipy (version=1.2.1)
-## Procedures
+## Guided Tutorial
 1. Encoding For TCR, peptide, and HLA.
 Command:
 ```
-python encoding_main.py -file input.csv -model h5_file -embeding_vectors_tcr h5_file/Atchley_factors.csv -hla_db hla_library/ -output encoding_output_folder -output_log output_folder/ternary.log -tcr_encoding_dim 80 -paired T
+python encoding/encoding_main.py -file input.csv -model h5_file -embeding_vectors_tcr h5_file/Atchley_factors.csv -hla_db hla_library/ -output encoding_output_folder -output_log output_folder/ternary.log -tcr_encoding_dim 80 -paired T
 ```
+* input.csv: input csv file with 3 columns named as "CDR3,Antigen,HLA": TCR-beta CDR3 sequence, peptide sequence, and HLA allele.
+
+
 2. Predict TCR Binding Rank
 ``` 
 python prediction_main.py -model weights.h5 -encoding_folder encoding_output_folder -output_dir prediction_output_folder
