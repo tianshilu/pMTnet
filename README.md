@@ -1,6 +1,6 @@
 # pMTnet
 Deep learning neural network prediction tcr binding specificity to peptide and HLA based on peptide sequences. 
-![preview](https://github.com/tianshilu/pMTnet/blob/master/example_pic/flow_chart.png)
+![preview](https://github.com/tianshilu/pMTnet/blob/master/example_pic/flow_chart_simple.png)
 ## Dependencies
 python(version>3.0.0) ; 
 tensorflow (version>1.5.0) ; 
