@@ -1,0 +1,10 @@
+Mission loading.
+Processing: test/input/test_input.csv
+0 antigens longer than 15aa are dropped!
+TCRMap done!
+antigenMap done!
+HLAMap done!
+Encoding Accomplished.
+
+Prediction Accomplished.
+
