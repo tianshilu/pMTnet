@@ -18,8 +18,8 @@ python pMTnet.py -input input.csv -library library -output output_dir -output_lo
 ![Input_file_example](https://github.com/tianshilu/pMTnet/blob/master/example_pic/input_file_example.png)
 * library: diretory to the downloaded library
 * output_dir : diretory you want to save the output
-* output_log : local directory to log file
-![Output file example]
+* output_log : local directory to log file with CDR, Antigen, HLA information and predicted binding rank.\
+![Output file example](https://github.com/tianshilu/pMTnet/blob/master/example_pic/output_file_example.png)
 
 ## Example 
 The example input file is under test/input/.
