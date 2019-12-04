@@ -22,7 +22,7 @@ python pMTnet.py -input input.csv -library library -output output_dir -output_lo
 ![Output file example](https://github.com/tianshilu/pMTnet/blob/master/example_pic/output_file_example.png)
 
 ## Example 
-The example input file is under test/input/.
+The example input file is under test/input/.\
 Comand :
 ```
 python pMTnet.py -input test/input/test_input.csv -library library -output test/output -output_log test/output/output.log
