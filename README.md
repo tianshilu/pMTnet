@@ -30,5 +30,5 @@ python pMTnet.py -input test/input/test_input.csv -library library -output test/
 The output for test_input.csv is under test/output.
 
 ## Output file example
-pMTnet outputs a table with 4 columns: CDR3 sequences, HLA alleles, antigens sequences, and ranks for each pair of TCR/pMHC. The rank reflects the percentile rank of the predicted binding strength between the TCR and the pMHC with respect to the 10,000 randomly sampled TCRs against the same pMHC. A lower rank considered a good prediction.
+pMTnet outputs a table with 4 columns: CDR3 sequences, antigens sequences, HLA alleles, and ranks for each pair of TCR/pMHC. The rank reflects the percentile rank of the predicted binding strength between the TCR and the pMHC with respect to the 10,000 randomly sampled TCRs against the same pMHC. A lower rank considered a good prediction. The sequences of 10,000 background TCRs can be fold under https://github.com/tianshilu/pMTnet/tree/master/library/bg_tcr_library. 
 ![Output file example](https://github.com/tianshilu/pMTnet/blob/master/example_pic/output_file_example.png)
