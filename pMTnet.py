@@ -7,12 +7,9 @@ import random
 import os
 from io import StringIO
 import keras
-from keras.layers import Input,Dense,concatenate,Dropout,LSTM
+from keras.layers import Input,Dense,concatenate,Dropout
 from keras.models import Model,load_model                                                      
-from keras.optimizers import Adam, Adamax, RMSprop, Adagrad, Adadelta, Nadam
 from keras import backend as K
-from keras.callbacks import EarlyStopping,ModelCheckpoint
-random.seed(54321)
 ##Customer Input
 #python pMTnet.py -input input.csv -library library_dir -output output_dir
 args = sys.argv
