@@ -1,5 +1,5 @@
 # pMTnet
-Deep learning neural network prediction tcr binding specificity to peptide and HLA based on peptide sequences. 
+Deep learning neural network prediction tcr binding specificity to peptide and HLA based on peptide sequences. Please refer to our paper for more details: Deep learning-based prediction of T cell receptor-antigen binding specificity.',Lu, T., Zhang, Z., Zhu, J. et al. 2021.
 ![preview](https://github.com/tianshilu/pMTnet/blob/master/example_pic/pic1.png)
 ## Dependencies
 python(version>3.0.0) ; 
