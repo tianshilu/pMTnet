@@ -6,6 +6,7 @@ import csv
 import random
 import os
 from io import StringIO
+from collections import Counter
 import keras
 from keras.layers import Input,Dense,concatenate,Dropout
 from keras.models import Model,load_model                                                      
@@ -113,19 +114,18 @@ def preprocess(filedir):
         print('Invalid file path: ' + filedir)
         return 0
     dataset = pd.read_csv(filedir, header=0)
+    dataset = dataset.sort_values('CDR3').reset_index(drop=True)
     #Preprocess HLA_antigen files
     #remove HLA which is not in HLA_seq_lib; if the input hla allele is not in HLA_seq_lib; then the first HLA startswith the input HLA allele will be given     
     #Remove antigen that is longer than 15aa
     dataset=dataset.dropna()
-    HLA_list=list(dataset['HLA'])
-    ind=0
-    index_list=[]
+    HLA_list=set(dataset['HLA'])
+    HLA_to_drop = list()
     for i in HLA_list:
         if len([hla_allele for hla_allele in HLA_seq_lib.keys() if hla_allele.startswith(str(i))])==0:
-            index_list.append(ind)
+            HLA_to_drop.append(i)
             print('drop '+i)
-        ind=ind+1
-    dataset=dataset.drop(dataset.iloc[index_list].index)
+    dataset=dataset[~dataset['HLA'].isin(HLA_to_drop)]
     dataset=dataset[dataset.Antigen.str.len()<16]
     print(str(max(dataset.index)-dataset.shape[0]+1)+' antigens longer than 15aa are dropped!')
     TCR_list=dataset['CDR3'].tolist()
@@ -144,24 +144,22 @@ def aamapping_TCR(peptideSeq,aa_dict):
             peptideArray.append(aa_dict[aa_single])
         except KeyError:
             print('Not proper aaSeqs: '+peptideSeq)
-            peptideArray.append(np.zeros(5,dtype='float64'))
+            peptideArray.append(np.zeros(5,dtype='float32'))
     for i in range(0,80-len(peptideSeq)):
-        peptideArray.append(np.zeros(5,dtype='float64'))
+        peptideArray.append(np.zeros(5,dtype='float32'))
     return np.asarray(peptideArray)
 
 def hla_encode(HLA_name,encoding_method):
     #Convert the a HLA allele to a zero-padded numeric representation.
     if HLA_name not in HLA_seq_lib.keys():
-        if len([hla_allele for hla_allele in HLA_seq_lib.keys() if hla_allele.startswith(str(HLA_name))])==0:
-            print('cannot find'+HLA_name)
         HLA_name=[hla_allele for hla_allele in HLA_seq_lib.keys() if hla_allele.startswith(str(HLA_name))][0]
     if HLA_name not in HLA_seq_lib.keys():
         print('Not proper HLA allele:'+HLA_name)
     HLA_sequence=HLA_seq_lib[HLA_name]
     HLA_int=[aa_dict_one_hot[char] for char in HLA_sequence]
-    while len(HLA_int)!=34:
-        #if the pseudo sequence length is not 34, use X for padding
-        HLA_int.append(20)
+    if len(HLA_int)!=34:
+        k=len(HLA_int)
+        HLA_int.extend([20] * (34 - k))
     result=ENCODING_DATA_FRAMES[encoding_method].iloc[HLA_int]
     # Get a numpy array of 34 rows and 21 columns
     return np.asarray(result)
@@ -171,8 +169,8 @@ def peptide_encode_HLA(peptide, maxlen,encoding_method):
     if len(peptide) > maxlen:
         msg = 'Peptide %s has length %d > maxlen = %d.'
         raise ValueError(msg % (peptide, len(peptide), maxlen))
-    peptide= peptide.replace(u'\xa0', u'')    #remove non-breaking space  
-    o = list(map(lambda x: aa_dict_one_hot[x.upper()] if x.upper() in aa_dict_one_hot.keys() else 20 , peptide)) 
+    peptide= peptide.replace(u'\xa0', u'').upper()    #remove non-breaking space  
+    o = [aa_dict_one_hot[aa] if aa in aa_dict_one_hot.keys() else 20 for aa in peptide] 
     #if the amino acid is not valid, replace it with padding aa 'X':20
     k = len(o)
     #use 'X'(20) for padding
@@ -185,35 +183,42 @@ def peptide_encode_HLA(peptide, maxlen,encoding_method):
 
 def TCRMap(dataset,aa_dict):
     #Wrapper of aamapping                                                                                                                 
-    for i in range(0,len(dataset)):
-        if i==0:
-            TCR_array=aamapping_TCR(dataset[i],aa_dict).reshape(1,80,5,1)
-        else:
-            TCR_array=np.append(TCR_array,aamapping_TCR(dataset[i],aa_dict).reshape(1,80,5,1),axis=0)
+    pos = 0
+    TCR_counter = Counter(dataset)
+    TCR_array = np.zeros((len(dataset), 80, 5, 1), dtype=np.float32)
+    for sequence, length in TCR_counter.items():
+        TCR_array[pos:pos+length] = np.repeat(aamapping_TCR(sequence,aa_dict).reshape(1,80,5,1), length, axis=0)
+        pos += length
     print('TCRMap done!')
     return TCR_array
 
 def HLAMap(dataset,encoding_method):
     #Input a list of HLA and get a three dimentional array
-    m=0
-    for each_HLA in dataset:
-        if m==0:
-            HLA_array=hla_encode(each_HLA,encoding_method).reshape(1,34,21)
+    pos=0
+    HLA_array = np.zeros((len(dataset), 34, 21), dtype=np.int8)
+    HLA_seen = dict()
+    for HLA in dataset:
+        if HLA not in HLA_seen.keys():  
+            HLA_array[pos] = hla_encode(HLA,encoding_method).reshape(1,34,21)
+            HLA_seen[HLA] = HLA_array[pos]
         else:
-            HLA_array=np.append(HLA_array,hla_encode(each_HLA,encoding_method).reshape(1,34,21),axis=0)
-        m=m+1
+            HLA_array[pos] = HLA_seen[HLA]
+        pos += 1
     print('HLAMap done!')
     return HLA_array
 
 def antigenMap(dataset,maxlen,encoding_method):
     #Input a list of antigens and get a three dimentional array
-    m=0
-    for each_antigen in dataset:
-        if m==0:
-            antigen_array=peptide_encode_HLA(each_antigen,maxlen,encoding_method).reshape(1,maxlen,21)
+    pos=0
+    antigen_array = np.zeros((len(dataset), maxlen, 21), dtype=np.int8)
+    antigens_seen = dict()
+    for antigen in dataset:
+        if antigen not in antigens_seen.keys():
+            antigen_array[pos]=peptide_encode_HLA(antigen, maxlen,encoding_method).reshape(1,maxlen,21)
+            antigens_seen[antigen] = antigen_array[pos]
         else:
-            antigen_array=np.append(antigen_array,peptide_encode_HLA(each_antigen, maxlen,encoding_method).reshape(1,maxlen,21),axis=0)
-        m=m+1
+            antigen_array[pos] = antigens_seen[antigen]
+        pos += 1
     print('antigenMap done!')
     return antigen_array
 
@@ -263,9 +268,8 @@ HLA_antigen_encoded_result=HLA_antigen_encoder.predict([antigen_array,HLA_array]
 
 TCR_encoded_matrix=pd.DataFrame(data=TCR_encoded_result,index=range(1,len(TCR_list)+1))
 HLA_antigen_encoded_matrix=pd.DataFrame(data=HLA_antigen_encoded_result,index=range(1,len(HLA_list)+1))
-allele_matrix=pd.DataFrame({'CDR3':TCR_list,'Antigen':antigen_list,'HLA':HLA_list},index=range(1,len(TCR_list)+1))
-TCR_encoded_matrix.to_csv(output_dir+'/TCR_output.csv',sep=',')
-HLA_antigen_encoded_matrix.to_csv(output_dir+'/MHC_antigen_output.csv',sep=',')
+# TCR_encoded_matrix.to_csv(output_dir+'/TCR_output.csv',sep=',')
+# HLA_antigen_encoded_matrix.to_csv(output_dir+'/MHC_antigen_output.csv',sep=',')
 print('Encoding Accomplished.\n')
 #########################################                                                                                                                       
 # make prediction based on encoding     #                                                                                                                     
@@ -285,15 +289,17 @@ ternary_prediction=Model(inputs=[pos_in,hla_antigen_in],outputs=ternary_output)
 ternary_prediction.load_weights(model_dir+'/weights.h5')
 ################ read dataset #################                                                                                                                  
 #read background negative TCRs
-TCR_neg_df_1k=pd.read_csv(library_dir+'/bg_tcr_library/TCR_output_1k.csv',index_col=0)
-TCR_neg_df_10k=pd.read_csv(library_dir+'/bg_tcr_library/TCR_output_10k.csv',index_col=0)
-TCR_pos_df=pd.read_csv(output_dir+'/TCR_output.csv',index_col=0)
-MHC_antigen_df=pd.read_csv(output_dir+'/MHC_antigen_output.csv',index_col=0)
+# This way we don't need to save and reload the matrices and use double de memory.
+TCR_neg_df_1k=pd.read_csv(library_dir+'/bg_tcr_library/TCR_output_1k.csv', names=pd.RangeIndex(0, 30,1), header=None, skiprows=1) 
+TCR_neg_df_10k=pd.read_csv(library_dir+'/bg_tcr_library/TCR_output_10k.csv', names=pd.RangeIndex(0, 30,1), header=None, skiprows=1)
+# As of the state of the software this step looks redundant and a waste of memory as it is loading an object that is already in memory but using a new variable name
+# TCR_pos_df=pd.read_csv(output_dir+'/TCR_output.csv',index_col=0)  
+# MHC_antigen_df=pd.read_csv(output_dir+'/MHC_antigen_output.csv',index_col=0)
 ################ make prediction ################# 
 rank_output=[]
-for each_data_index in range(TCR_pos_df.shape[0]):
-    tcr_pos=TCR_pos_df.iloc[[each_data_index,]]
-    pmhc=MHC_antigen_df.iloc[[each_data_index,]]
+for each_data_index in range(TCR_encoded_matrix.shape[0]):
+    tcr_pos=TCR_encoded_matrix.iloc[[each_data_index,]]
+    pmhc=HLA_antigen_encoded_matrix.iloc[[each_data_index,]]
     #used the positive pair with 1k negative tcr to form a 1001 data frame for prediction                                                                      
 
     TCR_input_df=pd.concat([tcr_pos,TCR_neg_df_1k],axis=0)
@@ -311,7 +317,7 @@ for each_data_index in range(TCR_pos_df.shape[0]):
     rank_output.append(rank)
 
 rank_output_matrix=pd.DataFrame({'CDR3':TCR_list,'Antigen':antigen_list,'HLA':HLA_list,'Rank':rank_output},index=range(1,len(TCR_list)+1))
-rank_output_matrix.to_csv(output_dir+'/prediction.csv',sep=',')
+rank_output_matrix.to_csv(output_dir+'/prediction.csv',sep=',', index=False)
 print('Prediction Accomplished.\n')
 log_file.close()
 #delete encoding files
