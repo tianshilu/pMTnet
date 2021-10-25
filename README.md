@@ -14,12 +14,12 @@ Command:
 ```
 python pMTnet.py -input input.csv -library library -output output_dir -output_log test/output/output.log
 ```
-* input.csv: input csv file with 3 columns named as "CDR3,Antigen,HLA": TCR-beta CDR3 sequence, peptide sequence, and HLA allele.\
+* input.csv: input csv file with 3 columns named as "CDR3,Antigen,HLA": TCR-beta CDR3 sequence, peptide sequence, and HLA allele. \
 ![Input_file_example](https://github.com/tianshilu/pMTnet/blob/master/example_pic/input_file_example.png)
 For more details about CDR3 encoding, please refer to https://github.com/jcao89757/TESSA.
 * library: diretory to the downloaded library with trained models, hla sequences, background TCR sequences, and Atchley Factors table.
 * output_dir : diretory you want to save the output
-* output_log : local directory to log file with CDR, Antigen, HLA information and predicted binding rank.\
+* output_log : local directory to log file with CDR, Antigen, HLA information and predicted binding rank. \
 
 
 ## Example 
