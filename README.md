@@ -19,7 +19,7 @@ python pMTnet.py -input input.csv -library library -output output_dir -output_lo
 For more details about CDR3 encoding, please refer to https://github.com/jcao89757/TESSA.
 * library: diretory to the downloaded library with trained models, hla sequences, background TCR sequences, and Atchley Factors table.
 * output_dir : diretory you want to save the output
-* output_log : local directory to log file with CDR, Antigen, HLA information and predicted binding rank. \
+* output_log : local directory to log file with CDR, Antigen, HLA information and predicted binding rank.\
 
 
 ## Example 
