@@ -321,5 +321,5 @@ rank_output_matrix.to_csv(output_dir+'/prediction.csv',sep=',', index=False)
 print('Prediction Accomplished.\n')
 log_file.close()
 #delete encoding files
-os.remove(output_dir+'/MHC_antigen_output.csv')
-os.remove(output_dir+'/TCR_output.csv')
+#os.remove(output_dir+'/MHC_antigen_output.csv')
+#os.remove(output_dir+'/TCR_output.csv')
