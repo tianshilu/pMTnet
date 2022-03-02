@@ -83,7 +83,7 @@ HLA_ABC=[hla_db_dir+'/A_prot.fasta',hla_db_dir+'/B_prot.fasta',hla_db_dir+'/C_pr
 HLA_seq_lib={}
 for one_class in HLA_ABC:
     prot=open(one_class)
-    #pseudo_seq from netMHCpan:https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0000796
+    #pseudo_seq from netMHCpan:https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0000796; minor bug 33 aa are used for pseudo seq, the performance is still good
     pseudo_seq_pos=[7,9,24,45,59,62,63,66,67,79,70,73,74,76,77,80,81,84,95,97,99,114,116,118,143,147,150,152,156,158,159,163,167]
     #write HLA sequences into a library
     #class I alles
