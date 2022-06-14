@@ -237,6 +237,7 @@ def pos_neg_acc(y_true,y_pred):
     diff=K.mean(K.cast(negative_pred<positive_pred,"float16"))
     return diff
 
+# the loss function ReLu(1 + f(p, T-) - f(p, T+)) shown in the paper is defined here:
 def pos_neg_loss(y_true,y_pred):
     #self-defined prediction loss function 
     positive_pred=y_pred[:,1]
